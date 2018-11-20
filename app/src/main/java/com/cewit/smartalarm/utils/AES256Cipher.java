@@ -19,6 +19,11 @@ import java.security.spec.AlgorithmParameterSpec;
  */
 public class AES256Cipher {
 
+    public static String key = "e8ffc7e56311679f12b6fc91aa77a5eb";
+    public static byte[] ivBytes = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+
+
     public static byte[] encrypt(byte[] ivBytes, byte[] keyBytes, byte[] textBytes)
             throws java.io.UnsupportedEncodingException,
             NoSuchAlgorithmException,

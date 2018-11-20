@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
@@ -24,9 +25,18 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.cewit.smartalarm.model.Student;
+import com.cewit.smartalarm.utils.AES256Cipher;
 import com.google.zxing.WriterException;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 import androidmads.library.qrgenearator.QRGContents;
 import androidmads.library.qrgenearator.QRGEncoder;
@@ -72,6 +82,29 @@ public class QRGeneratorActivity extends Activity {
         qrImage = findViewById(R.id.ivQR);
 
         String strText = strPIN + "," + strBloodType + "," + strRepresentativeNumber;
+        String base64Text = strText;
+        try {
+            byte[] keyBytes = AES256Cipher.key.getBytes("UTF-8");
+            byte[] cipherData = AES256Cipher.encrypt(AES256Cipher.ivBytes, keyBytes, strText.getBytes("UTF-8"));
+            base64Text = Base64.encodeToString(cipherData, Base64.DEFAULT);
+            Log.d(TAG, "Encrypted Text: " + base64Text);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (InvalidAlgorithmParameterException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        }
+
+
         WindowManager manager = (WindowManager) getSystemService(WINDOW_SERVICE);
         Display display = manager.getDefaultDisplay();
         Point point = new Point();
@@ -81,7 +114,7 @@ public class QRGeneratorActivity extends Activity {
         int smallerDimension = width < height ? width : height;
         smallerDimension = smallerDimension * 3 / 4;
 
-        qrgEncoder = new QRGEncoder(strText, null, QRGContents.Type.TEXT, smallerDimension);
+        qrgEncoder = new QRGEncoder(base64Text, null, QRGContents.Type.TEXT, smallerDimension);
         QRGeneratorActivity.verifyStoragePermissions(QRGeneratorActivity.this);
         boolean save;
         String result;
