@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cewit.smartalarm.model.StudentActivity;
+import com.cewit.smartalarm.utils.Util;
 
 import java.util.List;
 

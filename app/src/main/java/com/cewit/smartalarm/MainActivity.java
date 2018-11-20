@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.cewit.smartalarm.barcode.BarcodeCaptureActivity;
 import com.cewit.smartalarm.model.Activity;
 import com.cewit.smartalarm.model.Student;
+import com.cewit.smartalarm.utils.Util;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
 
