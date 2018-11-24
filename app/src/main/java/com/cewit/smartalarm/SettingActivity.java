@@ -24,6 +24,7 @@ public class SettingActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings);
+        setTitle("Settings");
         ivSetting = (ImageView) findViewById(R.id.ivSetting);
         ivQRCodeGenerate = (ImageView) findViewById(R.id.ivQRGenerate);
         ivQRModify = (ImageView) findViewById(R.id.ivQRModify);

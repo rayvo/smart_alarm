@@ -33,7 +33,7 @@ public class ActivityConfirmActivity extends AppCompatActivity {
         setContentView(R.layout.activity_list);
         list = findViewById(R.id.lvActivityList);
         Intent intent = this.getIntent();
-
+        setTitle("최종확인");
 
         loadData();
 

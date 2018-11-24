@@ -42,6 +42,7 @@ public class Util {
         return "";
     }
     public static String convertToTime(String strRawDate) {
+        if (strRawDate == null || strRawDate.length() == 0) return "";
         SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
         try {
             Date d = sdf.parse(strRawDate);
@@ -63,6 +64,7 @@ public class Util {
 
 
     public static String convertToDate(String strRawDate) {
+        if (strRawDate == null || strRawDate.length() == 0) return "";
         SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
         try {
             Date d = sdf.parse(strRawDate);

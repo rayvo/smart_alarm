@@ -1,6 +1,7 @@
 package com.cewit.smartalarm;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Point;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
 import android.util.Base64;
@@ -140,30 +142,7 @@ public class MainActivity extends AppCompatActivity {
                     Point[] points = barcode.cornerPoints;
                     String barcodeValue = barcode.displayValue;
                     Log.d(TAG, "barcodeValue: " + barcodeValue);
-                    if (barcodeValue.length() >= 36 ) { //TODO will be checked later
-                        try {
-                            byte[] keyBytes = AES256Cipher.key.getBytes("UTF-8");
-                            byte[] cipherData = AES256Cipher.decrypt(AES256Cipher.ivBytes, keyBytes, Base64.decode(barcodeValue.getBytes("UTF-8"),Base64.DEFAULT));
-                            strCode = new String(cipherData,"UTF-8");
-                            Log.d(TAG, "Decrypted Code: " + strCode);
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
-                        } catch (NoSuchAlgorithmException e) {
-                            e.printStackTrace();
-                        } catch (NoSuchPaddingException e) {
-                            e.printStackTrace();
-                        } catch (InvalidKeyException e) {
-                            e.printStackTrace();
-                        } catch (InvalidAlgorithmParameterException e) {
-                            e.printStackTrace();
-                        } catch (IllegalBlockSizeException e) {
-                            e.printStackTrace();
-                        } catch (BadPaddingException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        strCode = barcode.displayValue;
-                    }
+                    strCode = decode(barcodeValue);
                     Log.d(TAG, "strCode: " + strCode);
                     studentID = strCode.substring(0, strCode.indexOf(","));
                     Log.d(TAG, "ID: " + studentID);
@@ -177,13 +156,20 @@ public class MainActivity extends AppCompatActivity {
                             SmsManager.getDefault().sendTextMessage(parentNumber, null, messageContent, null, null);
                             Activity activity = new Activity(studentID, dateTime, "승차");
                             db.insertActivity(activity);
-                            Toast.makeText(this, "Messsage sent!", Toast.LENGTH_SHORT).show();
+                            showConfirmMessage(student.getName());
+
+                            //Toast.makeText(this, "Messsage sent!", Toast.LENGTH_SHORT).show();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     } else {
                         Toast.makeText(this, "Cannot find the user!", Toast.LENGTH_SHORT).show();
                     }
+
+
+
+
+
 
                 }
             } else
@@ -197,30 +183,7 @@ public class MainActivity extends AppCompatActivity {
                     Point[] points = barcode.cornerPoints;
                     String barcodeValue = barcode.displayValue;
                     Log.d(TAG, "barcodeValue: " + barcodeValue);
-                    if (barcodeValue.length() >= 36 ) { //TODO will be checked later
-                        try {
-                            byte[] keyBytes = AES256Cipher.key.getBytes("UTF-8");
-                            byte[] cipherData = AES256Cipher.decrypt(AES256Cipher.ivBytes, keyBytes, Base64.decode(barcodeValue.getBytes("UTF-8"),Base64.DEFAULT));
-                            strCode = new String(cipherData,"UTF-8");
-                            Log.d(TAG, "Decrypted Code: " + strCode);
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
-                        } catch (NoSuchAlgorithmException e) {
-                            e.printStackTrace();
-                        } catch (NoSuchPaddingException e) {
-                            e.printStackTrace();
-                        } catch (InvalidKeyException e) {
-                            e.printStackTrace();
-                        } catch (InvalidAlgorithmParameterException e) {
-                            e.printStackTrace();
-                        } catch (IllegalBlockSizeException e) {
-                            e.printStackTrace();
-                        } catch (BadPaddingException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        strCode = barcode.displayValue;
-                    }
+                    strCode = decode(barcodeValue);
                     Log.d(TAG, "strCode: " + strCode);
                     studentID = strCode.substring(0, strCode.indexOf(","));
                     Log.d(TAG, "ID: " + studentID);
@@ -234,7 +197,8 @@ public class MainActivity extends AppCompatActivity {
                             SmsManager.getDefault().sendTextMessage(parentNumber, null, messageContent, null, null);
                             Activity activity = new Activity(studentID, dateTime, "하차");
                             db.insertActivity(activity);
-                            Toast.makeText(this, "Messsage sent!", Toast.LENGTH_SHORT).show();
+                            showConfirmMessage(student.getName());
+                            //Toast.makeText(this, "Messsage sent!", Toast.LENGTH_SHORT).show();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -249,5 +213,60 @@ public class MainActivity extends AppCompatActivity {
         } else {
 
         }
+    }
+
+    private String decode(String barcodeValue) {
+        String strDecode = barcodeValue;
+        if (barcodeValue.length() >= 36 ) { //TODO will be checked later
+            try {
+                byte[] keyBytes = AES256Cipher.key.getBytes("UTF-8");
+                byte[] cipherData = AES256Cipher.decrypt(AES256Cipher.ivBytes, keyBytes, Base64.decode(barcodeValue.getBytes("UTF-8"),Base64.DEFAULT));
+                strDecode = new String(cipherData,"UTF-8");
+                Log.d(TAG, "Decrypted Code: " + strDecode);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (NoSuchPaddingException e) {
+                e.printStackTrace();
+            } catch (InvalidKeyException e) {
+                e.printStackTrace();
+            } catch (InvalidAlgorithmParameterException e) {
+                e.printStackTrace();
+            } catch (IllegalBlockSizeException e) {
+                e.printStackTrace();
+            } catch (BadPaddingException e) {
+                e.printStackTrace();
+            }
+        }
+        return strDecode;
+    }
+
+    private void showConfirmMessage(String strContent) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("확인");
+        strContent = strContent +   "의 부모님께 문자 발송을 하였습니다!";
+        builder.setMessage(strContent + "\n계속 진행할까요?");
+        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int which) {
+                // Do nothing but close the dialog
+                Intent intent = new Intent(MainActivity.this, BarcodeCaptureActivity.class);
+                startActivityForResult(intent, CODE_READER_GETON_REQUEST_CODE);
+            }
+        });
+        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                // Do nothing
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 }

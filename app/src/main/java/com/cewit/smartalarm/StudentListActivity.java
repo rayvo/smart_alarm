@@ -32,6 +32,7 @@ public class StudentListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.student_list);
 
+        setTitle("QR코드 확인/수정");
         list = findViewById(R.id.lvStudentList);
         Intent intent = this.getIntent();
 
