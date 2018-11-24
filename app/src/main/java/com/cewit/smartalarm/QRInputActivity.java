@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 
 import com.cewit.smartalarm.model.Student;
@@ -22,7 +23,9 @@ public class QRInputActivity extends Activity {
 
     EditText edtPIN, edtName, edtParentNumber, edtBloodType, edtRepresentativeNumber;
     Button btnStart, btnCancel;
+    CheckBox ckIsEncrypted;
     boolean isModificated = false;
+    boolean isEncrypted;
 
     private DBHelper db;
 
@@ -30,13 +33,14 @@ public class QRInputActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.single_qr_generate);
+        setContentView(R.layout.qr_input);
 
         edtPIN = findViewById(R.id.edtPIN);
         edtName = findViewById(R.id.edtName);
         edtParentNumber = findViewById(R.id.edtParentNumber);
         edtBloodType = findViewById(R.id.edtBloodType);
         edtRepresentativeNumber = findViewById(R.id.edtRepresentativeNumber);
+        ckIsEncrypted = findViewById(R.id.ckIsEncrypted);
 
         btnStart = findViewById(R.id.btnStart);
         btnCancel = findViewById(R.id.btnCancel);
@@ -52,6 +56,11 @@ public class QRInputActivity extends Activity {
             edtParentNumber.setText(student.getParentNumber());
             edtBloodType.setText(student.getBloodType());
             edtRepresentativeNumber.setText(student.getRepresentativeNumber());
+            if (student.getIsEncrypted() == 1) {
+                ckIsEncrypted.setChecked(true);
+            } else {
+                ckIsEncrypted.setChecked(false);
+            }
             isModificated = true;
         }
 
@@ -64,6 +73,13 @@ public class QRInputActivity extends Activity {
                 intent.putExtra("BLOOD_TYPE", edtBloodType.getText().toString().trim());
                 intent.putExtra("PARENT_NUMBER", edtParentNumber.getText().toString().trim());
                 intent.putExtra("REPRESENTATIVE_NUMBER", edtRepresentativeNumber.getText().toString().trim());
+                if (ckIsEncrypted.isChecked()) {
+                    intent.putExtra("IS_ENCRYPTED", 1);
+
+                } else {
+                    intent.putExtra("IS_ENCRYPTED", 0);
+
+                }
                 if (isModificated) {
                     intent.putExtra("IS_MODIFIED", "YES");
                 } else {

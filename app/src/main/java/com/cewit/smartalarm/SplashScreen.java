@@ -8,12 +8,14 @@ package com.cewit.smartalarm;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
@@ -36,6 +38,7 @@ public class SplashScreen extends AppCompatActivity {
     private static boolean isFirstLaunch = false;
     private DBHelper db;
 
+    SharedPreferences prefs = null;
 
     //Layout
     private ImageView ivMain;
@@ -48,6 +51,7 @@ public class SplashScreen extends AppCompatActivity {
         setContentView(R.layout.activity_splash_screen);
         getSupportActionBar().hide();
 
+        prefs = getSharedPreferences("com.cewit.smartalarm", MODE_PRIVATE);
 
         //Layout
         ivMain = (ImageView) findViewById(R.id.ivMainImage);
@@ -59,17 +63,8 @@ public class SplashScreen extends AppCompatActivity {
                 finish();
             }
         });
-        //DB Initialization
 
         db = new DBHelper(this);
-
-        //checkFirstLaunch();
-        //if (isFirstLaunch) {
-        //    initializeDB();
-        //}
-
-        initializeDB();
-        generateQR();
 
         Thread myThread = new Thread() {
             @Override
@@ -90,89 +85,47 @@ public class SplashScreen extends AppCompatActivity {
     }
 
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (prefs.getBoolean("firstrun", true)) {
+            // Do first run stuff here then set 'firstrun' as false
+            // using the following line to edit/commit prefs
+
+            Log.d(TAG, "FIRST RUN");
+            SplashScreen.verifyStoragePermissions(SplashScreen.this);
 
 
-   /* private boolean checkFirstLaunch() {
-        try {
-            PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
-            int currentVersion = info.versionCode;
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            int lastVersion = prefs.getInt(PreferencesActivity.KEY_HELP_VERSION_SHOWN, 0);
-            if (lastVersion == 0) {
-                isFirstLaunch = true;
-            } else {
-                isFirstLaunch = false;
-            }
-            *//*if (currentVersion > lastVersion) {
 
-                // Record the last version for which we last displayed the What's New (Help) page
-                prefs.edit().putInt(PreferencesActivity.KEY_HELP_VERSION_SHOWN, currentVersion).commit();
-                Intent intent = new Intent(this, HelpActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
 
-                // Show the default page on a clean install, and the what's new page on an upgrade.
-                String page = lastVersion == 0 ? HelpActivity.DEFAULT_PAGE : HelpActivity.WHATS_NEW_PAGE;
-                intent.putExtra(HelpActivity.REQUESTED_PAGE_KEY, page);
-                startActivity(intent);*//*
-                return true;
-           // }
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.w(TAG, e);
+            //DB Initialization
+            initializeDB();
+            generateQR();
+
+
+
+            prefs.edit().putBoolean("firstrun", false).commit();
         }
-        return false;
-    }*/
-
-    /*private void checkFirstRun() {
-
-        final String PREFS_NAME = "MyPrefsFile";
-        final String PREF_VERSION_CODE_KEY = "version_code";
-        final int DOESNT_EXIST = -1;
-
-        // Get current version code
-        int currentVersionCode = BuildConfig.VERSION_CODE;
-
-        // Get saved version code
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        int savedVersionCode = prefs.getInt(PREF_VERSION_CODE_KEY, DOESNT_EXIST);
-
-        // Check for first run or upgrade
-        if (currentVersionCode == savedVersionCode) {
-
-            isFirstLaunch = false;
-            return;
-
-        } else if (savedVersionCode == DOESNT_EXIST) {
-
-            // TODO This is a new install (or the user cleared the shared preferences)
-            isFirstLaunch = true;
-
-        } else if (currentVersionCode > savedVersionCode) {
-            isFirstLaunch = false;
-
-            // TODO This is an upgrade
-        }
-
-        // Update the shared preferences with the current version code
-        prefs.edit().putInt(PREF_VERSION_CODE_KEY, currentVersionCode).apply();
-    }*/
+    }
 
     private void initializeDB() {
-        db.insertStudent(new Student("108583913", "임태유", "01088818687", "0326261253", "AB+"));
-        db.insertStudent(new Student("108583914", "최민섭", "01062240968", "0326261253", "O+"));
-        db.insertStudent(new Student("108583915", "이경훈", "01088818687", "0326261253", "AB+"));
-        db.insertStudent(new Student("108583916", "강동우", "01062240968", "0326261253", "A+"));
-        db.insertStudent(new Student("108583917", "임태원", "01088818687", "0326261253", "B+"));
-        db.insertStudent(new Student("108583918", "로안보", "01088818687", "0326261253", "B+"));
-        db.insertStudent(new Student("108583919", "김민수", "01071362679", "0326261253", "O+"));
-        db.insertStudent(new Student("108583920", "나수빈", "01071362679", "0326261253", "B+"));
-        db.insertStudent(new Student("108583921", "김수구", "01088818687", "0326261253", "O+"));
-        db.insertStudent(new Student("108583922", "김혜나", "01088818687", "0326261253", "A+"));
-        db.insertStudent(new Student("108583923", "이영호", "01088818687", "0326261253", "O+"));
-        db.insertStudent(new Student("108583924", "강일철", "01062240968", "0326261253", "A+"));
-        db.insertStudent(new Student("108583925", "최택훈", "01088818687", "0326261253", "A+"));
-        db.insertStudent(new Student("108583926", "남수미", "01088818687", "0326261253", "AB+"));
-        db.insertStudent(new Student("108583927", "김영수", "01071362679", "0326261253", "B+"));
-        db.insertStudent(new Student("108583928", "나수복", "01071362679", "0326261253", "B+"));
+        db.insertStudent(new Student("108583913", "임태유", "01088818687", "0326261253", "AB+", 0));
+        db.insertStudent(new Student("108583914", "최민섭", "01062240968", "0326261253", "O+", 0));
+        db.insertStudent(new Student("108583915", "이경훈", "01088818687", "0326261253", "AB+", 0));
+        db.insertStudent(new Student("108583916", "강동우", "01062240968", "0326261253", "A+", 0));
+        db.insertStudent(new Student("108583917", "임태원", "01088818687", "0326261253", "B+", 0));
+        db.insertStudent(new Student("108583918", "로안보", "01088818687", "0326261253", "B+", 0));
+        db.insertStudent(new Student("108583919", "김민수", "01071362679", "0326261253", "O+", 0));
+        db.insertStudent(new Student("108583920", "나수빈", "01071362679", "0326261253", "B+", 0));
+        db.insertStudent(new Student("108583921", "김수구", "01088818687", "0326261253", "O+", 0));
+        db.insertStudent(new Student("108583922", "김혜나", "01088818687", "0326261253", "A+", 0));
+        db.insertStudent(new Student("108583923", "이영호", "01088818687", "0326261253", "O+", 0));
+        db.insertStudent(new Student("108583924", "강일철", "01062240968", "0326261253", "A+", 0));
+        db.insertStudent(new Student("108583925", "최택훈", "01088818687", "0326261253", "A+", 0));
+        db.insertStudent(new Student("108583926", "남수미", "01088818687", "0326261253", "AB+", 0));
+        db.insertStudent(new Student("108583927", "김영수", "01071362679", "0326261253", "B+", 0));
+        db.insertStudent(new Student("108583928", "나수복", "01071362679", "0326261253", "B+", 0));
     }
 
     private QRGEncoder qrgEncoder;
@@ -182,7 +135,7 @@ public class SplashScreen extends AppCompatActivity {
 
     private void generateQR() {
         List<Student> students = db.getAllStudents();
-        QRGeneratorActivity.verifyStoragePermissions(SplashScreen.this);
+
 
         if (students != null && students.size() > 0) {
             for (Student student : students) {
@@ -242,6 +195,7 @@ public class SplashScreen extends AppCompatActivity {
             );
         }
     }
+
 
 
 }

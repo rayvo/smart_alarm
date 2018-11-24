@@ -67,6 +67,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(Student.COLUMN_PARENT_NUMBER, student.getParentNumber());
         values.put(Student.COLUMN_REPRESENTATIVE_NUMBER, student.getRepresentativeNumber());
         values.put(Student.COLUMN_BLOOD_TYPE, student.getBloodType());
+        values.put(Student.COLUMN_IS_ENCRYPTED, student.getIsEncrypted());
 
         // insert row
         long id = db.insert(Student.TABLE_NAME, null, values);
@@ -88,7 +89,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         Cursor cursor = db.query(Student.TABLE_NAME,
                 new String[]{Student.COLUMN_ID, Student.COLUMN_NAME, Student.COLUMN_PARENT_NUMBER, Student.COLUMN_REPRESENTATIVE_NUMBER,
-                Student.COLUMN_BLOOD_TYPE},
+                Student.COLUMN_BLOOD_TYPE, Student.COLUMN_IS_ENCRYPTED},
                 Student.COLUMN_ID + "=?",
                 new String[]{String.valueOf(studentID)}, null, null, null, null);
 
@@ -103,7 +104,8 @@ public class DBHelper extends SQLiteOpenHelper {
                     cursor.getString(cursor.getColumnIndex(Student.COLUMN_NAME)),
                     cursor.getString(cursor.getColumnIndex(Student.COLUMN_PARENT_NUMBER)),
                     cursor.getString(cursor.getColumnIndex(Student.COLUMN_REPRESENTATIVE_NUMBER)),
-                    cursor.getString(cursor.getColumnIndex(Student.COLUMN_BLOOD_TYPE))
+                    cursor.getString(cursor.getColumnIndex(Student.COLUMN_BLOOD_TYPE)),
+                    cursor.getInt(cursor.getColumnIndex(Student.COLUMN_IS_ENCRYPTED))
              );
         } else {
             Log.d(TAG, "getStudent(" + studentID + "): FAIL" );
@@ -136,6 +138,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 student.setParentNumber(cursor.getString(cursor.getColumnIndex(Student.COLUMN_PARENT_NUMBER)));
                 student.setRepresentativeNumber(cursor.getString(cursor.getColumnIndex(Student.COLUMN_REPRESENTATIVE_NUMBER)));
                 student.setBloodType(cursor.getString(cursor.getColumnIndex(Student.COLUMN_BLOOD_TYPE)));
+                student.setIsEncrypted(cursor.getInt(cursor.getColumnIndex(Student.COLUMN_IS_ENCRYPTED)));
 
                 students.add(student);
             } while (cursor.moveToNext());
@@ -167,6 +170,10 @@ public class DBHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(Student.COLUMN_NAME, student.getName());
         values.put(Student.COLUMN_PARENT_NUMBER, student.getParentNumber());
+        values.put(Student.COLUMN_REPRESENTATIVE_NUMBER, student.getRepresentativeNumber());
+        values.put(Student.COLUMN_BLOOD_TYPE, student.getBloodType());
+        values.put(Student.COLUMN_IS_ENCRYPTED, student.getIsEncrypted());
+
 
         // updating row
         return db.update(Student.TABLE_NAME, values, Student.COLUMN_ID + " = ?",

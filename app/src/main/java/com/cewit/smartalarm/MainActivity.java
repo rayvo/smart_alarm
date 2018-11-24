@@ -39,10 +39,12 @@ import javax.crypto.NoSuchPaddingException;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final int MY_PERMISSIONS_REQUEST_SEND_SMS = 1;
     private static final int CODE_READER_GETON_REQUEST_CODE = 2 ;
     private static final int CODE_READER_GETOFF_REQUEST_CODE = 3;
     private static final int SETTINGS_REQUEST_CODE = 4;
+
+    private static final int MY_PERMISSIONS_REQUEST_SEND_SMS = 1;
+
 
     private DBHelper db;
 
@@ -85,23 +87,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        Date date = new Date();
-        Calendar calendar = GregorianCalendar.getInstance();
-        calendar.setTime(date);
-
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
-
-        String strCode;
-        String parentNumber;
-        Student student = null;
-
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
                 Manifest.permission.SEND_SMS)
@@ -128,6 +113,23 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Date date = new Date();
+        Calendar calendar = GregorianCalendar.getInstance();
+        calendar.setTime(date);
+
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+
+        String strCode = "";
+        String parentNumber;
+        Student student = null;
+
         String studentID;
         String dateTime = Util.getDate();
 
@@ -136,32 +138,32 @@ public class MainActivity extends AppCompatActivity {
                 if (data != null) {
                     Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
                     Point[] points = barcode.cornerPoints;
-                    String encryptedCode = barcode.displayValue;
-                    strCode = barcode.displayValue;
-                    try {
-                        byte[] keyBytes = AES256Cipher.key.getBytes("UTF-8");
-
-                        byte[] cipherData = AES256Cipher.decrypt(AES256Cipher.ivBytes, keyBytes, Base64.decode(encryptedCode.getBytes("UTF-8"),Base64.DEFAULT));
-                        strCode = new String(cipherData,"UTF-8");
-                        Log.d(TAG, "Decrypted Code: " + strCode);
-
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    } catch (NoSuchAlgorithmException e) {
-                        e.printStackTrace();
-                    } catch (NoSuchPaddingException e) {
-                        e.printStackTrace();
-                    } catch (InvalidKeyException e) {
-                        e.printStackTrace();
-                    } catch (InvalidAlgorithmParameterException e) {
-                        e.printStackTrace();
-                    } catch (IllegalBlockSizeException e) {
-                        e.printStackTrace();
-                    } catch (BadPaddingException e) {
-                        e.printStackTrace();
+                    String barcodeValue = barcode.displayValue;
+                    Log.d(TAG, "barcodeValue: " + barcodeValue);
+                    if (barcodeValue.length() >= 36 ) { //TODO will be checked later
+                        try {
+                            byte[] keyBytes = AES256Cipher.key.getBytes("UTF-8");
+                            byte[] cipherData = AES256Cipher.decrypt(AES256Cipher.ivBytes, keyBytes, Base64.decode(barcodeValue.getBytes("UTF-8"),Base64.DEFAULT));
+                            strCode = new String(cipherData,"UTF-8");
+                            Log.d(TAG, "Decrypted Code: " + strCode);
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        } catch (NoSuchAlgorithmException e) {
+                            e.printStackTrace();
+                        } catch (NoSuchPaddingException e) {
+                            e.printStackTrace();
+                        } catch (InvalidKeyException e) {
+                            e.printStackTrace();
+                        } catch (InvalidAlgorithmParameterException e) {
+                            e.printStackTrace();
+                        } catch (IllegalBlockSizeException e) {
+                            e.printStackTrace();
+                        } catch (BadPaddingException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        strCode = barcode.displayValue;
                     }
-
-
                     Log.d(TAG, "strCode: " + strCode);
                     studentID = strCode.substring(0, strCode.indexOf(","));
                     Log.d(TAG, "ID: " + studentID);
@@ -193,31 +195,34 @@ public class MainActivity extends AppCompatActivity {
                 if (data != null) {
                     Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
                     Point[] points = barcode.cornerPoints;
-                    String encryptedCode = barcode.displayValue;
-                    strCode = barcode.displayValue;
-                    try {
-                        byte[] keyBytes = AES256Cipher.key.getBytes("UTF-8");
-                        byte[] cipherData = AES256Cipher.decrypt(AES256Cipher.ivBytes, keyBytes, Base64.decode(encryptedCode.getBytes("UTF-8"),Base64.DEFAULT));
-                        strCode = new String(cipherData,"UTF-8");
-                        Log.d(TAG, "Decrypted Code: " + strCode);
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    } catch (NoSuchAlgorithmException e) {
-                        e.printStackTrace();
-                    } catch (NoSuchPaddingException e) {
-                        e.printStackTrace();
-                    } catch (InvalidKeyException e) {
-                        e.printStackTrace();
-                    } catch (InvalidAlgorithmParameterException e) {
-                        e.printStackTrace();
-                    } catch (IllegalBlockSizeException e) {
-                        e.printStackTrace();
-                    } catch (BadPaddingException e) {
-                        e.printStackTrace();
+                    String barcodeValue = barcode.displayValue;
+                    Log.d(TAG, "barcodeValue: " + barcodeValue);
+                    if (barcodeValue.length() >= 36 ) { //TODO will be checked later
+                        try {
+                            byte[] keyBytes = AES256Cipher.key.getBytes("UTF-8");
+                            byte[] cipherData = AES256Cipher.decrypt(AES256Cipher.ivBytes, keyBytes, Base64.decode(barcodeValue.getBytes("UTF-8"),Base64.DEFAULT));
+                            strCode = new String(cipherData,"UTF-8");
+                            Log.d(TAG, "Decrypted Code: " + strCode);
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        } catch (NoSuchAlgorithmException e) {
+                            e.printStackTrace();
+                        } catch (NoSuchPaddingException e) {
+                            e.printStackTrace();
+                        } catch (InvalidKeyException e) {
+                            e.printStackTrace();
+                        } catch (InvalidAlgorithmParameterException e) {
+                            e.printStackTrace();
+                        } catch (IllegalBlockSizeException e) {
+                            e.printStackTrace();
+                        } catch (BadPaddingException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        strCode = barcode.displayValue;
                     }
                     Log.d(TAG, "strCode: " + strCode);
                     studentID = strCode.substring(0, strCode.indexOf(","));
-                    student = db.getStudent(studentID);
                     Log.d(TAG, "ID: " + studentID);
 
                     student = db.getStudent(studentID);

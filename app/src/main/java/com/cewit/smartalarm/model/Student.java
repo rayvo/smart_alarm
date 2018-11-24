@@ -14,6 +14,7 @@ public class Student {
     public static final String COLUMN_PARENT_NUMBER = "parent_number";
     public static final String COLUMN_REPRESENTATIVE_NUMBER = "representative_number";
     public static final String COLUMN_BLOOD_TYPE = "blood_type";
+    public static final String COLUMN_IS_ENCRYPTED = "is_encrypted";
 
 
     //Blood types
@@ -27,7 +28,8 @@ public class Student {
                     + COLUMN_NAME + " TEXT,"
                     + COLUMN_PARENT_NUMBER + " TEXT, "
                     + COLUMN_REPRESENTATIVE_NUMBER + " TEXT, "
-                    + COLUMN_BLOOD_TYPE + " TEXT"
+                    + COLUMN_BLOOD_TYPE + " TEXT, "
+                    + COLUMN_IS_ENCRYPTED + " INTEGER"
                     + ")";
 
 
@@ -36,6 +38,7 @@ public class Student {
     private String parentNumber;
     private String representativeNumber;
     private String bloodType;
+    private int isEncrypted;
 
 
     public Student() {
@@ -47,12 +50,13 @@ public class Student {
         this.parentNumber = parentNumber;
     }
 
-    public Student(String id, String name, String parentNumber, String representativeNumber, String bloodType) {
+    public Student(String id, String name, String parentNumber, String representativeNumber, String bloodType, int isEncrypted) {
         this.id = id;
         this.name = name;
         this.parentNumber = parentNumber;
         this.representativeNumber = representativeNumber;
         this.bloodType = bloodType;
+        this.isEncrypted = isEncrypted;
     }
 
     public String getId() {
@@ -94,4 +98,14 @@ public class Student {
     public void setBloodType(String bloodType) {
         this.bloodType = bloodType;
     }
+
+    public int getIsEncrypted() {
+        return isEncrypted;
+    }
+
+    public void setIsEncrypted(int isEncrypted) {
+        this.isEncrypted = isEncrypted;
+    }
+
+
 }

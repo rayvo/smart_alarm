@@ -60,6 +60,7 @@ public class QRGeneratorActivity extends Activity {
     String savePath = Environment.getExternalStorageDirectory().getPath() + "/QRCode/";
 
     private boolean isGenerated = false;
+    private int isEncrypted = 0;
     private DBHelper db;
     private String strPIN, strName, strParentNumber, strRepresentativeNumber, strBloodType, strIsModified;
 
@@ -76,6 +77,7 @@ public class QRGeneratorActivity extends Activity {
         strRepresentativeNumber = intent.getStringExtra("REPRESENTATIVE_NUMBER");
         strBloodType = intent.getStringExtra("BLOOD_TYPE");
         strIsModified = intent.getStringExtra("IS_MODIFIED");
+        isEncrypted = intent.getIntExtra("IS_ENCRYPTED", 0);
 
         btnSend = findViewById(R.id.btnSend);
         btnCancel = findViewById(R.id.btnCancel);
@@ -83,26 +85,30 @@ public class QRGeneratorActivity extends Activity {
 
         String strText = strPIN + "," + strBloodType + "," + strRepresentativeNumber;
         String base64Text = strText;
-        try {
-            byte[] keyBytes = AES256Cipher.key.getBytes("UTF-8");
-            byte[] cipherData = AES256Cipher.encrypt(AES256Cipher.ivBytes, keyBytes, strText.getBytes("UTF-8"));
-            base64Text = Base64.encodeToString(cipherData, Base64.DEFAULT);
-            Log.d(TAG, "Encrypted Text: " + base64Text);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
+        if (isEncrypted == 1) {
+            try {
+                byte[] keyBytes = AES256Cipher.key.getBytes("UTF-8");
+                byte[] cipherData = AES256Cipher.encrypt(AES256Cipher.ivBytes, keyBytes, strText.getBytes("UTF-8"));
+                base64Text = Base64.encodeToString(cipherData, Base64.DEFAULT);
+                Log.d(TAG, "Encrypted Text: " + base64Text);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (NoSuchPaddingException e) {
+                e.printStackTrace();
+            } catch (InvalidKeyException e) {
+                e.printStackTrace();
+            } catch (InvalidAlgorithmParameterException e) {
+                e.printStackTrace();
+            } catch (IllegalBlockSizeException e) {
+                e.printStackTrace();
+            } catch (BadPaddingException e) {
+                e.printStackTrace();
+            }
         }
+
+
 
 
         WindowManager manager = (WindowManager) getSystemService(WINDOW_SERVICE);
@@ -116,12 +122,13 @@ public class QRGeneratorActivity extends Activity {
 
         qrgEncoder = new QRGEncoder(base64Text, null, QRGContents.Type.TEXT, smallerDimension);
         QRGeneratorActivity.verifyStoragePermissions(QRGeneratorActivity.this);
+
         boolean save;
         String result;
 
         try {
             bitmap = qrgEncoder.encodeAsBitmap();
-            bitmap = ProcessingBitmap(bitmap, strName + "-" + strPIN);
+            bitmap = ProcessingBitmap(bitmap, strName + " (" + strBloodType + ")",  "Tel: " + strRepresentativeNumber);
             save = QRGSaver.save(savePath, strPIN.trim(), bitmap, QRGContents.ImageType.IMAGE_JPEG);
             result = save ? "Image Saved" : "Image Not Saved";
 
@@ -180,8 +187,9 @@ public class QRGeneratorActivity extends Activity {
     }
 
     private void saveToDB() {
+
         try {
-            Student student = new Student(strPIN, strName, strParentNumber, strRepresentativeNumber, strBloodType);
+            Student student = new Student(strPIN, strName, strParentNumber, strRepresentativeNumber, strBloodType, isEncrypted);
 
             if(strIsModified.equalsIgnoreCase("YES")) {
                 db.updateStudent(student);
@@ -195,7 +203,7 @@ public class QRGeneratorActivity extends Activity {
 
     }
 
-    private Bitmap ProcessingBitmap(Bitmap bm1, String captionString) {
+    private Bitmap ProcessingBitmap(Bitmap bm1, String headTitle, String captionString) {
         //Bitmap bm1 = null;
         Bitmap newBitmap = null;
         try {
@@ -213,7 +221,7 @@ public class QRGeneratorActivity extends Activity {
             canvas.drawBitmap(bm1, 0, 0, null);
             Paint paintText = new Paint(Paint.ANTI_ALIAS_FLAG);
             paintText.setColor(Color.BLACK);
-            paintText.setTextSize(50);
+            paintText.setTextSize(45);
             paintText.setStyle(Paint.Style.FILL);
             //paintText.setShadowLayer(10f, 10f, 10f, Color.BLACK);
             Rect textRect = new Rect();
@@ -225,6 +233,12 @@ public class QRGeneratorActivity extends Activity {
             //int yPos = (int) ((canvas.getHeight()/2) - ((paintText.descent() + paintText.ascent()) / 2)) ;
             int yPos = canvas.getHeight() - 10 ;
             canvas.drawText(captionString, xPos, yPos, paintText);
+            /*******************************************************/
+
+            paintText.getTextBounds(headTitle, 0, headTitle.length(), textRect);
+            yPos = 45;
+            canvas.drawText(headTitle, xPos, yPos, paintText);
+
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -232,15 +246,15 @@ public class QRGeneratorActivity extends Activity {
         return newBitmap;
     }
 
+
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-
     /**
      * Checks if the app has permission to write to device storage
-     * <p>
+     *
      * If the app does not has permission then the user will be prompted to grant permissions
      *
      * @param activity
